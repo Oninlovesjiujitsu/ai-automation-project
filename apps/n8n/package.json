@@ -1,0 +1,7 @@
+{
+  "name": "n8n-orchestrator",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "docker compose up"
+  }
+}
