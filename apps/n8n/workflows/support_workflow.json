@@ -1,0 +1,123 @@
+{
+  "name": "Support Routing Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "support-ticket",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/api/process-ticket",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"ticket_text\": \"{{ $json.body.ticket_text }}\"\n}",
+        "options": {}
+      },
+      "id": "2",
+      "name": "Evaluate Ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "dataType": "boolean",
+        "value1": "={{ $json.evaluation.passed }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": false,
+              "output": 0
+            },
+            {
+              "value2": true,
+              "output": 1
+            }
+          ]
+        }
+      },
+      "id": "3",
+      "name": "Passed Evaluation?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [600, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"🚨 *Escalation Required* 🚨\\n\\n*Ticket:* {{ $('Webhook').item.json.body.ticket_text }}\\n*Draft:* {{ $json.draft }}\\n*Reason:* {{ $json.evaluation.reason }}\"\n}",
+        "options": {}
+      },
+      "id": "4",
+      "name": "Slack Escalation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [800, 100]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "5",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [800, 500]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Ticket": {
+      "main": [
+        [
+          {
+            "node": "Passed Evaluation?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Passed Evaluation?": {
+      "main": [
+        [
+          {
+            "node": "Slack Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

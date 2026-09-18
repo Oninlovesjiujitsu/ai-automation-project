@@ -7,7 +7,6 @@ from app.rag.vectorstore import get_retriever
 
 class SupportDrafter:
     def __init__(self):
-        # Using the incredibly fast 8B model for drafting logic
         self.llm = ChatGroq(
             model="openai/gpt-oss-20b",
             temperature=0.2,
