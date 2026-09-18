@@ -6,9 +6,9 @@ An enterprise-grade, multi-layered customer service automation system. It interc
 ## 2. Tech Stack
 *   **Orchestration:** [n8n](https://n8n.io/) (Handles webhook ingestion, conditional routing, and API communication)
 *   **AI Framework:** [LangChain](https://www.langchain.com/) (Manages the Agent logic, tool calling, and RAG pipeline)
-*   **Support Agent (Drafter):** Anthropic Claude 3.5 Sonnet (Optimized for conversational tone and complex reasoning)
-*   **Evaluator (Gatekeeper):** OpenAI GPT-4o via [DeepEval](https://confident-ai.com/) (Acts as the strict LLM-as-a-judge for QA)
-*   **Vector Database (Embeddings):** OpenAI text-embedding-3-small (Fast, low-cost semantic search)
+*   **Support Agent (Drafter):** Groq Llama 3.1 8B (Provides extreme speed and high daily request limits for basic logic and drafting)
+*   **Evaluator (Gatekeeper):** Groq Llama 3.3 70B via [DeepEval](https://confident-ai.com/) (Provides complex reasoning as a strict LLM-as-a-judge for QA, keeping costs at $0.00)
+*   **Vector Database (Embeddings):** Google `text-embedding-004` (Fast, free semantic search replacing OpenAI embeddings)
 *   **Frontend Showcase:** Next.js (Interactive Split-Screen Demo UI)
 *   **Human-in-the-Loop (HITL):** Slack / CRM (For manual review of escalated tickets)
 
@@ -19,7 +19,7 @@ An enterprise-grade, multi-layered customer service automation system. It interc
 3.  **RAG & Drafting:** 
     *   LangChain Agent converts the query to a vector.
     *   Searches the Vector Database for relevant company policies.
-    *   Claude 3.5 Sonnet drafts a response and classifies user sentiment.
+    *   Llama 3.1 8B drafts a response and classifies user sentiment.
 4.  **Evaluation:** DeepEval immediately scores the drafted response against the retrieved context to check for Hallucinations and Answer Relevancy.
 5.  **Routing (The Switch):** The backend returns the draft and the DeepEval score to n8n.
     *   *Path A (Pass):* If Score >= 0.85 & Sentiment is safe -> n8n emails the customer automatically.
@@ -38,7 +38,7 @@ To showcase this complex backend orchestration, the project includes an interact
 ## 5. Key Value Propositions
 *   **Risk Mitigation:** Incorporating DeepEval as a live gatekeeper solves the primary enterprise fear of AI hallucinations.
 *   **Human-in-the-Loop:** Demonstrates maturity by not fully automating edge cases, relying on elegant escalation paths instead.
-*   **Multi-Model Architecture:** Showcases advanced AI engineering by routing specific tasks to the most capable models (Claude for drafting, GPT-4o for strict evaluation).
+*   **Cost-Efficient AI Engineering:** Showcases advanced AI engineering by using a hybrid **Groq + Gemini API** architecture. We use Llama 3.1 8B (via Groq) for rapid drafting, Llama 3.3 70B for strict evaluation, and Gemini for embeddings, providing state-of-the-art reasoning at exactly $0.00 while avoiding serverless memory limits.
 *   **Full-Stack Execution:** Merges highly technical backend AI orchestration with a beautiful, client-facing React frontend.
 
 ## 6. Project Structure

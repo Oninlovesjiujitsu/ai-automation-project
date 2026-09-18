@@ -1,8 +1,9 @@
 fastapi
 uvicorn
 langchain
-langchain-anthropic
-langchain-openai
+langchain-google-genai
+langchain-groq
 deepeval
 pydantic
 python-dotenv
+chromadb
