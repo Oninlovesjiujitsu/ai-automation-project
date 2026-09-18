@@ -9,7 +9,7 @@ DB_DIR = os.path.join(os.path.dirname(__file__), "../../chroma_db")
 
 def init_vectorstore() -> Chroma:
     """Initializes and returns the Chroma vector database using Gemini embeddings."""
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
     
     if os.path.exists(DB_DIR):
         return Chroma(persist_directory=DB_DIR, embedding_function=embeddings)

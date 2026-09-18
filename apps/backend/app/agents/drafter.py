@@ -9,7 +9,7 @@ class SupportDrafter:
     def __init__(self):
         # Using the incredibly fast 8B model for drafting logic
         self.llm = ChatGroq(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             temperature=0.2,
             # Force JSON mode for structured output
             model_kwargs={"response_format": {"type": "json_object"}}

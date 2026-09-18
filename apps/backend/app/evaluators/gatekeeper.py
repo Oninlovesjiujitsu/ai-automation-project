@@ -8,7 +8,7 @@ class GroqDeepEval(DeepEvalBaseLLM):
     """Custom wrapper to allow DeepEval to use ChatGroq (Llama-3-70B)."""
     def __init__(self):
         # Using the powerful 70B model for strict reasoning and evaluation
-        self.model = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.0)
+        self.model = ChatGroq(model="openai/gpt-oss-120b", temperature=0.0)
 
     def load_model(self):
         return self.model
@@ -22,7 +22,7 @@ class GroqDeepEval(DeepEvalBaseLLM):
         return res.content
 
     def get_model_name(self):
-        return "llama-3.3-70b-versatile"
+        return "openai/gpt-oss-120b"
 
 
 class Gatekeeper:
