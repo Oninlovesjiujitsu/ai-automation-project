@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { RefreshCw, Play, Loader2 } from "lucide-react";
 
 interface CustomerFormProps {
@@ -10,39 +11,11 @@ interface CustomerFormProps {
 }
 
 export default function CustomerForm({ onSubmitTicket, onLoadingChange, hasResponse }: CustomerFormProps) {
-  const [customerName, setCustomerName] = useState("");
-  const [ticketText, setTicketText] = useState("");
+  const [customerName, setCustomerName] = useLocalStorage<string>("supportEngine_customerName", "");
+  const [ticketText, setTicketText] = useLocalStorage<string>("supportEngine_ticketText", "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [activeScenario, setActiveScenario] = useState<string | null>("Missed SLA");
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const savedName = localStorage.getItem('supportEngine_customerName');
-    const savedText = localStorage.getItem('supportEngine_ticketText');
-    const savedScenario = localStorage.getItem('supportEngine_activeScenario');
-    
-    if (savedName) setCustomerName(savedName);
-    if (savedText) setTicketText(savedText);
-    if (savedScenario) setActiveScenario(savedScenario);
-  }, []);
-
-  // Save to localStorage on change
-  useEffect(() => {
-    localStorage.setItem('supportEngine_customerName', customerName);
-  }, [customerName]);
-
-  useEffect(() => {
-    localStorage.setItem('supportEngine_ticketText', ticketText);
-  }, [ticketText]);
-
-  useEffect(() => {
-    if (activeScenario) {
-      localStorage.setItem('supportEngine_activeScenario', activeScenario);
-    } else {
-      localStorage.removeItem('supportEngine_activeScenario');
-    }
-  }, [activeScenario]);
+  const [activeScenario, setActiveScenario] = useLocalStorage<string | null>("supportEngine_activeScenario", "Missed SLA");
 
   const handleSubmit = async () => {
     if (!ticketText.trim()) return;

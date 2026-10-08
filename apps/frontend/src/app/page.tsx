@@ -1,33 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import CustomerForm from "@/components/CustomerForm";
 import AdminTerminal from "@/components/AdminTerminal";
 
 export default function Dashboard() {
-  const [ticketResponse, setTicketResponse] = useState<any>(null);
+  const [ticketResponse, setTicketResponse] = useLocalStorage<any>("supportEngine_ticketResponse", null);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const savedResponse = localStorage.getItem('supportEngine_ticketResponse');
-    if (savedResponse) {
-      try {
-        setTicketResponse(JSON.parse(savedResponse));
-      } catch (e) {
-        console.error("Failed to parse saved response", e);
-      }
-    }
-  }, []);
-
-  // Save to localStorage when it changes
-  useEffect(() => {
-    if (ticketResponse) {
-      localStorage.setItem('supportEngine_ticketResponse', JSON.stringify(ticketResponse));
-    } else {
-      localStorage.removeItem('supportEngine_ticketResponse');
-    }
-  }, [ticketResponse]);
 
   return (
     <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 sm:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
