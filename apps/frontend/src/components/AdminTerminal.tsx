@@ -1,12 +1,24 @@
 "use client";
 
-import { Check, CheckCircle2, Copy, RefreshCw, Code, TerminalSquare } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, CheckCircle2, Copy, RefreshCw, Code, TerminalSquare, Hash, X, ChevronDown, ChevronUp } from "lucide-react";
 
 interface AdminTerminalProps {
   response: any;
 }
 
 export default function AdminTerminal({ response }: AdminTerminalProps) {
+  const [isToastDismissed, setIsToastDismissed] = useState(false);
+  const [isToastExpanded, setIsToastExpanded] = useState(false);
+
+  useEffect(() => {
+    // Reset toast state when a new response arrives
+    if (response) {
+      setIsToastDismissed(false);
+      setIsToastExpanded(false);
+    }
+  }, [response]);
+
   if (!response) {
     return (
       <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 border border-dashed border-zinc-300 dark:border-zinc-800 rounded-xl">
@@ -21,6 +33,8 @@ export default function AdminTerminal({ response }: AdminTerminalProps) {
     ["angry", "frustrated"].includes(response.sentiment) || 
     (response.evaluation && response.evaluation.passed === false) ||
     !response.draft;
+
+  const showToast = isEscalated && !isToastDismissed;
 
   return (
     <>
@@ -131,11 +145,69 @@ export default function AdminTerminal({ response }: AdminTerminalProps) {
             <Code className="w-3.5 h-3.5" />
             <span>Copy JSON</span>
           </button>
+          {isEscalated && (
+            <button 
+              onClick={() => setIsToastDismissed(!isToastDismissed)}
+              className="px-3 py-1.5 rounded-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-1.5"
+            >
+              <Hash className="w-3.5 h-3.5" />
+              <span>{isToastDismissed ? "Show Alert" : "Hide Alert"}</span>
+            </button>
+          )}
         </div>
         <button className="text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors flex items-center gap-1">
           <span>Feedback</span>
         </button>
       </div>
+      {/* Mock Slack Toast Notification for Portfolio Demo */}
+      {showToast && (
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:bottom-6 md:right-6 md:w-96 bg-white dark:bg-[#1a1d21] border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-500 z-50 flex flex-col max-h-[85vh]">
+          <div className="flex items-center justify-between px-3 py-2 bg-zinc-50 dark:bg-[#222529] border-b border-zinc-100 dark:border-zinc-800 shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded flex items-center justify-center bg-[#4A154B] text-white shrink-0">
+                <Hash className="w-3 h-3" />
+              </div>
+              <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Slack • #escalations</span>
+            </div>
+            <button 
+              onClick={() => setIsToastDismissed(true)}
+              className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 rounded-md transition-colors"
+              aria-label="Dismiss"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="p-4 overflow-y-auto">
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded shrink-0 bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                n8n
+              </div>
+              <div className="text-[13px] text-zinc-800 dark:text-zinc-200 leading-relaxed font-sans flex-1 min-w-0">
+                <span className="font-bold block mb-1 text-zinc-900 dark:text-zinc-100">
+                  n8n Escalation Bot <span className="text-xs font-normal text-zinc-500 ml-1">Just now</span>
+                </span>
+                🚨 <strong>Escalation Required</strong> 🚨<br/>
+                <br/>
+                <div className={`relative ${!isToastExpanded ? 'line-clamp-3' : ''} break-words`}>
+                  <strong>Reason:</strong> {response.evaluation?.reason || "Drafting failed"}<br/>
+                  <strong>Draft:</strong> {response.draft || "System Error: Failed to generate draft."}
+                </div>
+                
+                <button 
+                  onClick={() => setIsToastExpanded(!isToastExpanded)}
+                  className="mt-2 text-blue-600 dark:text-blue-400 font-medium text-xs flex items-center gap-1 hover:underline focus:outline-none"
+                >
+                  {isToastExpanded ? (
+                    <>Show less <ChevronUp className="w-3 h-3" /></>
+                  ) : (
+                    <>Show more <ChevronDown className="w-3 h-3" /></>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

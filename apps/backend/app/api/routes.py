@@ -8,6 +8,7 @@ router = APIRouter(prefix="/api", tags=["Support Engine"])
 
 class TicketRequest(BaseModel):
     ticket_text: str
+    customer_name: str = "Valued Customer"
 
 # Instantiate services once to follow Singleton/Dependency Injection patterns loosely
 drafter_service = SupportDrafter()
@@ -21,7 +22,7 @@ async def process_ticket(req: TicketRequest) -> Dict[str, Any]:
     2. Evaluates the draft using the Gatekeeper
     3. Returns the final payload
     """
-    draft_result = await drafter_service.draft_response(req.ticket_text)
+    draft_result = await drafter_service.draft_response(req.ticket_text, req.customer_name)
     
     # If drafting failed systemically, don't evaluate
     if "System Error" in draft_result["draft"]:

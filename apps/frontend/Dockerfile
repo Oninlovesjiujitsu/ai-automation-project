@@ -1,15 +1,18 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
 # Ensure we install dependencies for the frontend
-COPY package.json package-lock.json ./
-RUN npm install
+COPY package.json ./
+RUN npm install --legacy-peer-deps
 
 COPY . .
 
 RUN npm run build
 
 EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
 
 CMD ["npm", "start"]

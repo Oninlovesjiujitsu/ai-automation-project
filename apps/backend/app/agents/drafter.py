@@ -8,20 +8,21 @@ from app.core.schemas import DrafterResponse
 class SupportDrafter:
     def __init__(self):
         self.llm = ChatGroq(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             temperature=0.2
         ).with_structured_output(DrafterResponse)
         self.retriever = get_retriever()
 
-    async def draft_response(self, ticket_text: str) -> Dict[str, Any]:
+    async def draft_response(self, ticket_text: str, customer_name: str = "Valued Customer") -> Dict[str, Any]:
         """Retrieves context and generates a drafted response and sentiment classification."""
         docs = await self.retriever.ainvoke(ticket_text)
         context = "\n\n".join([doc.page_content for doc in docs])
         
         human_prompt = (
+            f"Customer Name: {customer_name}\n"
             f"Customer Ticket:\n{ticket_text}\n\n"
             f"Relevant Company Policies:\n{context}\n\n"
-            "Please draft the response and determine sentiment."
+            "Please draft the response. Ensure you greet the customer by their Name."
         )
         
         messages = [

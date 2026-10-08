@@ -8,6 +8,7 @@ interface CustomerFormProps {
 }
 
 export default function CustomerForm({ onSubmitTicket }: CustomerFormProps) {
+  const [customerName, setCustomerName] = useState("");
   const [ticketText, setTicketText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,7 +24,10 @@ export default function CustomerForm({ onSubmitTicket }: CustomerFormProps) {
       const res = await fetch("/api/ticket", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticket_text: ticketText }),
+        body: JSON.stringify({ 
+          ticket_text: ticketText, 
+          customer_name: customerName || "Valued Customer" 
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to submit ticket");
@@ -48,21 +52,25 @@ export default function CustomerForm({ onSubmitTicket }: CustomerFormProps) {
   const scenarios = [
     {
       name: "Missed SLA",
+      customer: "Alex Mercer",
       text: "We had another failure during checkout on production today (Order #98214), costing us roughly $14k in dropped cart volume. If this is not resolved within 2 hours, we will be escalating directly to our account executive to cancel our contract.",
     },
     {
       name: "Double Charge",
+      customer: "Sarah Jenkins",
       text: "My recent order charged my card twice. Please refund the duplicate charge immediately.",
     },
     {
       name: "Password Reset",
+      customer: "David Kim",
       text: "How do I reset my password? I forgot it and the email link is expired.",
     }
   ];
 
-  const handleScenarioClick = (name: string, text: string) => {
+  const handleScenarioClick = (name: string, text: string, customer: string) => {
     setActiveScenario(name);
     setTicketText(text);
+    setCustomerName(customer);
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -78,7 +86,7 @@ export default function CustomerForm({ onSubmitTicket }: CustomerFormProps) {
         <div className="flex items-center justify-between">
           <h1 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Simulation Harness</h1>
           <button 
-            onClick={() => { setTicketText(""); onSubmitTicket(null); setError(""); setActiveScenario(null); }}
+            onClick={() => { setTicketText(""); setCustomerName(""); onSubmitTicket(null); setError(""); setActiveScenario(null); }}
             className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 p-1 rounded transition-colors" 
             title="Reset"
           >
@@ -97,7 +105,7 @@ export default function CustomerForm({ onSubmitTicket }: CustomerFormProps) {
           {scenarios.map((s) => (
             <button 
               key={s.name}
-              onClick={() => handleScenarioClick(s.name, s.text)}
+              onClick={() => handleScenarioClick(s.name, s.text, s.customer)}
               className={`px-2.5 py-1 text-xs rounded-full font-medium shadow-xs transition-colors ${
                 activeScenario === s.name 
                   ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 border border-transparent"
@@ -131,6 +139,14 @@ export default function CustomerForm({ onSubmitTicket }: CustomerFormProps) {
       {/* Expansive Clean Textarea */}
       <div className="flex flex-col gap-1.5">
         <div className="relative bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/90 dark:border-zinc-800/90 shadow-xs focus-within:border-zinc-400 dark:focus-within:border-zinc-600 focus-within:ring-2 focus-within:ring-zinc-100 dark:focus-within:ring-zinc-800 transition-all overflow-hidden">
+          <input
+            type="text"
+            className="w-full px-4 pt-3 pb-2 border-b border-zinc-100 dark:border-zinc-800/60 bg-transparent text-sm font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none"
+            placeholder="Customer Name (e.g. John Doe)"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            disabled={loading}
+          />
           <textarea 
             className="w-full p-4 border-0 bg-transparent text-sm text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-300 dark:placeholder:text-zinc-600 focus:ring-0 focus:outline-none resize-none font-normal leading-relaxed" 
             placeholder="Type or paste incoming customer payload..." 
