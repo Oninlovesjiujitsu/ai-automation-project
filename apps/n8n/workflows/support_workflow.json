@@ -68,8 +68,15 @@
         "method": "POST",
         "url": "={{ $env.SLACK_WEBHOOK_URL }}",
         "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"text\": \"🚨 *Escalation Required* 🚨\\n\\n*Ticket:* {{ $('Webhook').item.json.body.ticket_text }}\\n*Draft:* {{ $json.draft }}\\n*Reason:* {{ $json.evaluation.reason }}\"\n}",
+        "specifyBody": "keypair",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=🚨 *Escalation Required* 🚨\n\n*Ticket:* {{ $('Webhook').item.json.body.ticket_text }}\n*Draft:* {{ $json.draft }}\n*Reason:* {{ $json.evaluation.reason }}"
+            }
+          ]
+        },
         "options": {}
       },
       "id": "4",

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, CheckCircle2, Copy, RefreshCw, Code, TerminalSquare, Hash, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, CheckCircle2, Copy, RefreshCw, Code, TerminalSquare, Hash, X, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 
 interface AdminTerminalProps {
   response: any;
+  isLoading?: boolean;
 }
 
-export default function AdminTerminal({ response }: AdminTerminalProps) {
+export default function AdminTerminal({ response, isLoading }: AdminTerminalProps) {
   const [isToastDismissed, setIsToastDismissed] = useState(false);
   const [isToastExpanded, setIsToastExpanded] = useState(false);
 
@@ -18,6 +19,16 @@ export default function AdminTerminal({ response }: AdminTerminalProps) {
       setIsToastExpanded(false);
     }
   }, [response]);
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 border border-dashed border-zinc-300 dark:border-zinc-800 rounded-xl">
+        <Loader2 className="w-10 h-10 mb-3 opacity-50 animate-spin" />
+        <p className="text-sm font-medium tracking-tight">Executing AI Pipeline...</p>
+        <p className="text-[11px] mt-2 opacity-60">Running Drafter & Gatekeeper models</p>
+      </div>
+    );
+  }
 
   if (!response) {
     return (

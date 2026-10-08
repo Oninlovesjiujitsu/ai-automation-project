@@ -5,9 +5,10 @@ import { RefreshCw, Play, Loader2 } from "lucide-react";
 
 interface CustomerFormProps {
   onSubmitTicket: (response: any) => void;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
-export default function CustomerForm({ onSubmitTicket }: CustomerFormProps) {
+export default function CustomerForm({ onSubmitTicket, onLoadingChange }: CustomerFormProps) {
   const [customerName, setCustomerName] = useState("");
   const [ticketText, setTicketText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,6 +18,7 @@ export default function CustomerForm({ onSubmitTicket }: CustomerFormProps) {
     if (!ticketText.trim()) return;
 
     setLoading(true);
+    if (onLoadingChange) onLoadingChange(true);
     setError("");
     onSubmitTicket(null); // Clear previous response
 
@@ -38,6 +40,7 @@ export default function CustomerForm({ onSubmitTicket }: CustomerFormProps) {
       setError(err.message || "An error occurred");
     } finally {
       setLoading(false);
+      if (onLoadingChange) onLoadingChange(false);
     }
   };
 

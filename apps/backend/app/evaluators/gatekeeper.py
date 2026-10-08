@@ -7,8 +7,8 @@ from deepeval.test_case import LLMTestCase
 class GroqDeepEval(DeepEvalBaseLLM):
     """Custom wrapper to allow DeepEval to use ChatGroq (Llama-3-70B)."""
     def __init__(self):
-        # Using the powerful 70B model for strict reasoning and evaluation
-        self.model = ChatGroq(model="openai/gpt-oss-20b", temperature=0.0)
+        # Using the powerful 120B model for strict reasoning and evaluation
+        self.model = ChatGroq(model="openai/gpt-oss-120b", temperature=0.0)
 
     def load_model(self):
         return self.model
