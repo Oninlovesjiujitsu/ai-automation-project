@@ -17,10 +17,17 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://host.docker.internal:8000/api/process-ticket",
+        "url": "http://backend:8000/api/process-ticket",
         "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"ticket_text\": \"{{ $json.body.ticket_text }}\"\n}",
+        "specifyBody": "keypair",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "ticket_text",
+              "value": "={{ $json.body.ticket_text }}"
+            }
+          ]
+        },
         "options": {}
       },
       "id": "2",
@@ -32,7 +39,7 @@
     {
       "parameters": {
         "dataType": "boolean",
-        "value1": "={{ $json.evaluation.passed }}",
+        "value1": "={{ $json.evaluation.passed === true && !['angry', 'frustrated'].includes($json.sentiment) }}",
         "rules": {
           "rules": [
             {
@@ -75,6 +82,14 @@
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
+      "position": [1000, 500]
+    },
+    {
+      "parameters": {},
+      "id": "6",
+      "name": "Send Auto-Reply Email",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
       "position": [800, 500]
     }
   ],
@@ -110,6 +125,17 @@
             "index": 0
           }
         ],
+        [
+          {
+            "node": "Send Auto-Reply Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Auto-Reply Email": {
+      "main": [
         [
           {
             "node": "Respond to Webhook",

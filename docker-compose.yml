@@ -1,13 +1,21 @@
 version: "3.7"
 services:
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    restart: always
+
   backend:
     build:
-      context: ../backend
+      context: ./apps/backend
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
     env_file:
-      - ../backend/.env
+      - ./apps/backend/.env
     restart: always
 
   n8n:
@@ -16,7 +24,7 @@ services:
     ports:
       - "5678:5678"
     env_file:
-      - .env
+      - ./apps/n8n/.env
     environment:
       - N8N_HOST=0.0.0.0
       - N8N_PORT=5678
@@ -27,6 +35,6 @@ services:
       - N8N_ENV_VARS_EXPOSED=SLACK_WEBHOOK_URL
     volumes:
       - n8n_data:/home/node/.n8n
-      - ./workflows:/home/node/workflows
+      - ./apps/n8n/workflows:/home/node/workflows
 volumes:
   n8n_data:

@@ -1,10 +1,17 @@
 from fastapi import FastAPI
-from app.api.routes import router as api_router
+from contextlib import asynccontextmanager
 from app.core.config import settings  # Ensures env vars are validated on startup
+from app.api.routes import router as api_router
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from app.rag.vectorstore import init_vectorstore
+    init_vectorstore()
+    yield
 
 def create_app() -> FastAPI:
     """Application factory for the FastAPI backend."""
-    app = FastAPI(title="Autonomous Support Engine API")
+    app = FastAPI(title="Autonomous Support Engine API", lifespan=lifespan)
     
     app.include_router(api_router)
     

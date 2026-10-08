@@ -1,4 +1,5 @@
 import os
+import shutil
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -26,6 +27,12 @@ def init_vectorstore() -> Chroma:
     
     vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory=DB_DIR)
     return vectorstore
+
+def refresh_vectorstore() -> Chroma:
+    """Clears and re-initializes the vector database."""
+    if os.path.exists(DB_DIR):
+        shutil.rmtree(DB_DIR)
+    return init_vectorstore()
 
 def get_retriever():
     """Returns a retriever interface for the vectorstore."""

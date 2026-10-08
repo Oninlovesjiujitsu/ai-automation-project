@@ -18,7 +18,7 @@ export default function AdminTerminal({ response }: AdminTerminalProps) {
 
   // Determine if it was escalated
   const isEscalated = 
-    response.sentiment === "negative" || 
+    ["angry", "frustrated"].includes(response.sentiment) || 
     (response.evaluation && response.evaluation.passed === false) ||
     !response.draft;
 

@@ -14,14 +14,14 @@ drafter_service = SupportDrafter()
 gatekeeper_service = Gatekeeper()
 
 @router.post("/process-ticket")
-def process_ticket(req: TicketRequest) -> Dict[str, Any]:
+async def process_ticket(req: TicketRequest) -> Dict[str, Any]:
     """
     Orchestrates the entire support flow:
     1. Drafts a response using the Support Agent
     2. Evaluates the draft using the Gatekeeper
     3. Returns the final payload
     """
-    draft_result = drafter_service.draft_response(req.ticket_text)
+    draft_result = await drafter_service.draft_response(req.ticket_text)
     
     # If drafting failed systemically, don't evaluate
     if "System Error" in draft_result["draft"]:
@@ -31,7 +31,7 @@ def process_ticket(req: TicketRequest) -> Dict[str, Any]:
             "evaluation": {"score": 0.0, "passed": False, "reason": "Drafting failed"}
         }
 
-    eval_result = gatekeeper_service.evaluate(
+    eval_result = await gatekeeper_service.evaluate(
         ticket=req.ticket_text,
         draft=draft_result["draft"],
         context=draft_result["context_used"]
@@ -42,3 +42,11 @@ def process_ticket(req: TicketRequest) -> Dict[str, Any]:
         "sentiment": draft_result["sentiment"],
         "evaluation": eval_result
     }
+
+@router.post("/refresh-db")
+def refresh_db() -> Dict[str, Any]:
+    """Manually triggers a refresh of the vector database."""
+    from app.rag.vectorstore import refresh_vectorstore, get_retriever
+    refresh_vectorstore()
+    drafter_service.retriever = get_retriever()
+    return {"status": "success", "message": "Vector database refreshed"}

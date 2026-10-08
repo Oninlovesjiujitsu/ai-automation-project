@@ -5,7 +5,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     
     // Proxy the request to the local n8n webhook
-    const response = await fetch('http://127.0.0.1:5678/webhook/support-ticket', {
+    const webhookUrl = process.env.N8N_WEBHOOK_URL || 'http://127.0.0.1:5678/webhook/support-ticket';
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
