@@ -1,18 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RefreshCw, Play, Loader2 } from "lucide-react";
 
 interface CustomerFormProps {
   onSubmitTicket: (response: any) => void;
   onLoadingChange?: (loading: boolean) => void;
+  hasResponse?: boolean;
 }
 
-export default function CustomerForm({ onSubmitTicket, onLoadingChange }: CustomerFormProps) {
+export default function CustomerForm({ onSubmitTicket, onLoadingChange, hasResponse }: CustomerFormProps) {
   const [customerName, setCustomerName] = useState("");
   const [ticketText, setTicketText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedName = localStorage.getItem('supportEngine_customerName');
+    const savedText = localStorage.getItem('supportEngine_ticketText');
+    const savedScenario = localStorage.getItem('supportEngine_activeScenario');
+    
+    if (savedName) setCustomerName(savedName);
+    if (savedText) setTicketText(savedText);
+    if (savedScenario) setActiveScenario(savedScenario);
+  }, []);
+
+  // Save to localStorage on change
+  useEffect(() => {
+    localStorage.setItem('supportEngine_customerName', customerName);
+  }, [customerName]);
+
+  useEffect(() => {
+    localStorage.setItem('supportEngine_ticketText', ticketText);
+  }, [ticketText]);
+
+  useEffect(() => {
+    if (activeScenario) {
+      localStorage.setItem('supportEngine_activeScenario', activeScenario);
+    } else {
+      localStorage.removeItem('supportEngine_activeScenario');
+    }
+  }, [activeScenario]);
 
   const handleSubmit = async () => {
     if (!ticketText.trim()) return;
@@ -89,7 +118,18 @@ export default function CustomerForm({ onSubmitTicket, onLoadingChange }: Custom
         <div className="flex items-center justify-between">
           <h1 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Simulation Harness</h1>
           <button 
-            onClick={() => { setTicketText(""); setCustomerName(""); onSubmitTicket(null); setError(""); setActiveScenario(null); }}
+            onClick={() => { 
+              if (hasResponse) {
+                if (!window.confirm("Are you sure you want to clear the session? This will erase the current ticket and the AI's response.")) {
+                  return;
+                }
+              }
+              setTicketText(""); 
+              setCustomerName(""); 
+              onSubmitTicket(null); 
+              setError(""); 
+              setActiveScenario(null); 
+            }}
             className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 p-1 rounded transition-colors" 
             title="Reset"
           >
