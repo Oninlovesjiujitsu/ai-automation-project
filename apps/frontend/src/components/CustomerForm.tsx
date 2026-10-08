@@ -14,6 +14,7 @@ export default function CustomerForm({ onSubmitTicket, onLoadingChange, hasRespo
   const [ticketText, setTicketText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [activeScenario, setActiveScenario] = useState<string | null>("Missed SLA");
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -78,8 +79,6 @@ export default function CustomerForm({ onSubmitTicket, onLoadingChange, hasRespo
       handleSubmit();
     }
   };
-
-  const [activeScenario, setActiveScenario] = useState<string | null>("Missed SLA");
 
   const scenarios = [
     {
