@@ -86,7 +86,7 @@
           "parameters": [
             {
               "name": "text",
-              "value": "=🚨 *Escalation Required* 🚨\n\n*Ticket:* {{ $json.body.ticket_text || $('Webhook').item.json.body.ticket_text }}\n*Draft:* {{ $json.body.draft || $json.draft }}\n*Reason:* {{ $json.body.evaluation?.reason || $json.evaluation.reason }}"
+              "value": "=🚨 *Escalation Required* 🚨\n\n*Ticket:* {{ $('Escalation Webhook').item.json.body.ticket_text || $('Webhook').item.json.body.ticket_text }}\n*Draft:* {{ $('Escalation Webhook').item.json.body.draft || $json.draft }}\n*Reason:* {{ $('Escalation Webhook').item.json.body.evaluation?.reason || $json.evaluation.reason }}"
             }
           ]
         },
