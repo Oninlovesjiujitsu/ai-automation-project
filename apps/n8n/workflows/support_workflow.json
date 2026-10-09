@@ -16,6 +16,19 @@
     },
     {
       "parameters": {
+        "httpMethod": "POST",
+        "path": "escalate",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "7",
+      "name": "Escalation Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [600, 100]
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "http://backend:8000/api/process-ticket",
         "sendBody": true,
@@ -73,7 +86,7 @@
           "parameters": [
             {
               "name": "text",
-              "value": "=🚨 *Escalation Required* 🚨\n\n*Ticket:* {{ $('Webhook').item.json.body.ticket_text }}\n*Draft:* {{ $json.draft }}\n*Reason:* {{ $json.evaluation.reason }}"
+              "value": "=🚨 *Escalation Required* 🚨\n\n*Ticket:* {{ $json.body.ticket_text || $('Webhook').item.json.body.ticket_text }}\n*Draft:* {{ $json.body.draft || $json.draft }}\n*Reason:* {{ $json.body.evaluation?.reason || $json.evaluation.reason }}"
             }
           ]
         },
@@ -110,6 +123,17 @@
         [
           {
             "node": "Evaluate Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escalation Webhook": {
+      "main": [
+        [
+          {
+            "node": "Slack Escalation",
             "type": "main",
             "index": 0
           }

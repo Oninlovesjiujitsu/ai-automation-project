@@ -3,6 +3,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Dict, Any
 import json
+import httpx
+import os
 from app.agents.drafter import SupportDrafter
 from app.evaluators.gatekeeper import Gatekeeper
 
@@ -81,6 +83,18 @@ async def stream_ticket(req: TicketRequest):
             )
             
             yield f"data: {json.dumps({'type': 'eval', 'data': eval_result})}\n\n"
+            
+            if not eval_result.get("passed"):
+                webhook_url = os.getenv("N8N_ESCALATE_URL", "http://n8n:5678/webhook/escalate")
+                try:
+                    async with httpx.AsyncClient() as client:
+                        await client.post(webhook_url, json={
+                            "ticket_text": req.ticket_text,
+                            "draft": internal_data["full_draft"],
+                            "evaluation": eval_result
+                        })
+                except Exception as e:
+                    yield f"data: {json.dumps({'type': 'log', 'content': f'Failed to trigger Slack escalation webhook: {e}'})}\n\n"
         
         yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
