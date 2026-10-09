@@ -84,7 +84,9 @@ async def stream_ticket(req: TicketRequest):
             
             yield f"data: {json.dumps({'type': 'eval', 'data': eval_result})}\n\n"
             
-            if not eval_result.get("passed"):
+            should_escalate = not eval_result.get("passed") or internal_data.get("sentiment") in ["angry", "frustrated"]
+            
+            if should_escalate:
                 webhook_url = os.getenv("N8N_ESCALATE_URL", "http://n8n:5678/webhook/escalate")
                 try:
                     async with httpx.AsyncClient() as client:

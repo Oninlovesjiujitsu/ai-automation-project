@@ -108,7 +108,7 @@ class SupportDrafter:
             yield json.dumps({"type": "log", "content": "Draft complete."})
             
             # Yield a final hidden event that passes the raw data to the router for evaluation
-            yield json.dumps({"type": "internal_complete", "full_draft": full_draft, "context_used": context})
+            yield json.dumps({"type": "internal_complete", "full_draft": full_draft, "context_used": context, "sentiment": sentiment})
             
         except Exception as e:
             yield json.dumps({"type": "log", "content": f"System Error: {str(e)}"})
