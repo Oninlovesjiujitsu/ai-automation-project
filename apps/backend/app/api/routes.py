@@ -88,11 +88,12 @@ async def stream_ticket(req: TicketRequest):
                 webhook_url = os.getenv("N8N_ESCALATE_URL", "http://n8n:5678/webhook/escalate")
                 try:
                     async with httpx.AsyncClient() as client:
-                        await client.post(webhook_url, json={
+                        response = await client.post(webhook_url, json={
                             "ticket_text": req.ticket_text,
                             "draft": internal_data["full_draft"],
                             "evaluation": eval_result
                         })
+                        response.raise_for_status()
                 except Exception as e:
                     yield f"data: {json.dumps({'type': 'log', 'content': f'Failed to trigger Slack escalation webhook: {e}'})}\n\n"
         

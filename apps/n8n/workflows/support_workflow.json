@@ -12,7 +12,10 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [200, 300]
+      "position": [
+        200,
+        300
+      ]
     },
     {
       "parameters": {
@@ -25,7 +28,10 @@
       "name": "Escalation Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [600, 100]
+      "position": [
+        600,
+        100
+      ]
     },
     {
       "parameters": {
@@ -51,7 +57,10 @@
       "name": "Evaluate Ticket",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [400, 300]
+      "position": [
+        400,
+        300
+      ]
     },
     {
       "parameters": {
@@ -74,7 +83,10 @@
       "name": "Passed Evaluation?",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
-      "position": [600, 300]
+      "position": [
+        600,
+        300
+      ]
     },
     {
       "parameters": {
@@ -96,7 +108,10 @@
       "name": "Slack Escalation",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [800, 100]
+      "position": [
+        800,
+        100
+      ]
     },
     {
       "parameters": {
@@ -106,7 +121,10 @@
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1000, 500]
+      "position": [
+        1000,
+        500
+      ]
     },
     {
       "parameters": {},
@@ -114,7 +132,10 @@
       "name": "Send Auto-Reply Email",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
-      "position": [800, 500]
+      "position": [
+        800,
+        500
+      ]
     }
   ],
   "connections": {
