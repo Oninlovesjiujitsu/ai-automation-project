@@ -5,46 +5,22 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { RefreshCw, Play, Loader2 } from "lucide-react";
 
 interface CustomerFormProps {
-  onSubmitTicket: (response: any) => void;
-  onLoadingChange?: (loading: boolean) => void;
+  onSubmitTicket: (ticketText: string, customerName: string) => void;
+  onClear: () => void;
+  isLoading?: boolean;
   hasResponse?: boolean;
 }
 
-export default function CustomerForm({ onSubmitTicket, onLoadingChange, hasResponse }: CustomerFormProps) {
+export default function CustomerForm({ onSubmitTicket, onClear, isLoading, hasResponse }: CustomerFormProps) {
   const [customerName, setCustomerName] = useLocalStorage<string>("supportEngine_customerName", "");
   const [ticketText, setTicketText] = useLocalStorage<string>("supportEngine_ticketText", "");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [activeScenario, setActiveScenario] = useLocalStorage<string | null>("supportEngine_activeScenario", "Missed SLA");
 
   const handleSubmit = async () => {
     if (!ticketText.trim()) return;
-
-    setLoading(true);
-    if (onLoadingChange) onLoadingChange(true);
     setError("");
-    onSubmitTicket(null); // Clear previous response
-
-    try {
-      const res = await fetch("/api/ticket", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          ticket_text: ticketText, 
-          customer_name: customerName || "Valued Customer" 
-        }),
-      });
-
-      if (!res.ok) throw new Error("Failed to submit ticket");
-
-      const data = await res.json();
-      onSubmitTicket(data);
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
-    } finally {
-      setLoading(false);
-      if (onLoadingChange) onLoadingChange(false);
-    }
+    onSubmitTicket(ticketText, customerName || "Valued Customer");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -98,7 +74,7 @@ export default function CustomerForm({ onSubmitTicket, onLoadingChange, hasRespo
               }
               setTicketText(""); 
               setCustomerName(""); 
-              onSubmitTicket(null); 
+              onClear(); 
               setError(""); 
               setActiveScenario(null); 
             }}
@@ -160,7 +136,7 @@ export default function CustomerForm({ onSubmitTicket, onLoadingChange, hasRespo
             placeholder="Customer Name (e.g. John Doe)"
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
-            disabled={loading}
+            disabled={isLoading}
           />
           <textarea 
             className="w-full p-4 border-0 bg-transparent text-sm text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-300 dark:placeholder:text-zinc-600 focus:ring-0 focus:outline-none resize-none font-normal leading-relaxed" 
@@ -169,7 +145,7 @@ export default function CustomerForm({ onSubmitTicket, onLoadingChange, hasRespo
             value={ticketText}
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
-            disabled={loading}
+            disabled={isLoading}
           />
           <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-50/70 dark:bg-zinc-950/70 border-t border-zinc-100 dark:border-zinc-800/50 text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
             <span>{ticketText.length} chars · ~{Math.ceil(ticketText.length / 4)} tokens</span>
@@ -183,16 +159,16 @@ export default function CustomerForm({ onSubmitTicket, onLoadingChange, hasRespo
       <div className="flex flex-col gap-2 pt-1">
         <button 
           onClick={handleSubmit}
-          disabled={!ticketText.trim() || loading}
+          disabled={!ticketText.trim() || isLoading}
           className="w-full py-2.5 px-4 bg-zinc-900 dark:bg-zinc-100 hover:bg-black dark:hover:bg-white disabled:opacity-50 text-white dark:text-zinc-900 text-xs font-medium rounded-lg flex items-center justify-center gap-2 shadow-sm active:scale-[0.99] transition-all"
         >
-          {loading ? (
+          {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <Play className="w-4 h-4 fill-current" />
           )}
-          <span>{loading ? "Executing Pipeline..." : "Execute Pipeline"}</span>
-          {!loading && <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 ml-1">⌘↵</span>}
+          <span>{isLoading ? "Executing Pipeline..." : "Execute Pipeline"}</span>
+          {!isLoading && <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 ml-1">⌘↵</span>}
         </button>
         <span className="text-center text-[11px] text-zinc-400 dark:text-zinc-500">Max evaluation budget: 1,500ms</span>
       </div>

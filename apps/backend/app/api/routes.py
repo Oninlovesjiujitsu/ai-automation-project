@@ -1,6 +1,8 @@
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Dict, Any
+import json
 from app.agents.drafter import SupportDrafter
 from app.evaluators.gatekeeper import Gatekeeper
 
@@ -43,6 +45,46 @@ async def process_ticket(req: TicketRequest) -> Dict[str, Any]:
         "sentiment": draft_result["sentiment"],
         "evaluation": eval_result
     }
+
+@router.post("/stream-ticket")
+async def stream_ticket(req: TicketRequest):
+    """
+    Streaming orchestration:
+    1. Yields real-time events from the Support Agent (logs and text chunks).
+    2. Runs the Gatekeeper evaluation asynchronously at the end and yields the result.
+    """
+    async def event_generator():
+        internal_data = {}
+        
+        # 1. Stream the draft response
+        async for chunk_str in drafter_service.stream_draft_response(req.ticket_text, req.customer_name):
+            try:
+                data = json.loads(chunk_str)
+                # Catch internal complete signal to run evaluation
+                if data.get("type") == "internal_complete":
+                    internal_data = data
+                    continue
+            except:
+                pass
+            
+            # SSE format: "data: {json}\n\n"
+            yield f"data: {chunk_str}\n\n"
+            
+        # 2. Evaluate the draft using the Gatekeeper
+        if internal_data.get("full_draft") and not "System Error" in internal_data.get("full_draft"):
+            yield f"data: {json.dumps({'type': 'log', 'content': 'Running DeepEval validation...'})}\n\n"
+            
+            eval_result = await gatekeeper_service.evaluate(
+                ticket=req.ticket_text,
+                draft=internal_data["full_draft"],
+                context=internal_data["context_used"]
+            )
+            
+            yield f"data: {json.dumps({'type': 'eval', 'data': eval_result})}\n\n"
+        
+        yield f"data: {json.dumps({'type': 'done'})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 @router.post("/refresh-db")
 def refresh_db() -> Dict[str, Any]:
