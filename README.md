@@ -9,28 +9,25 @@ The architecture is highly decoupled, ensuring immediate UI feedback while maint
 
 ```mermaid
 graph TD
-    A[Customer Form] -->|JSON Payload| B(n8n Webhook)
-    B --> C{AI Backend}
+    A[Customer Form] -->|Server-Sent Events| B(FastAPI Backend)
     
-    subgraph FastAPI & LangChain
-        C -->|1. RAG| D[Retrieve Policies]
-        D -->|2. Drafter| E[Generate Response]
-        E -->|3. Gatekeeper| F[Evaluate Hallucinations]
+    subgraph Real-Time Streaming (FastAPI)
+        B -->|1. RAG| C[Retrieve Policies]
+        C -->|2. Drafter| D[Generate Response]
+        D -->|3. Yield Tokens| E[Next.js UI Stream]
+        D -->|4. Gatekeeper| F[DeepEval Validation]
     end
     
-    F -->|JSON Result| G(n8n Webhook Response)
-    G -->|Instant Render| H[Next.js Dashboard]
-    
-    F -->|Background Task| I{Pass/Fail?}
-    I -->|Fail / Angry| J[Slack Escalation]
-    I -->|Pass / Calm| K[Auto-Resolved]
+    F -->|Decision Check| G{Pass/Fail or Angry?}
+    G -->|Fail or Angry| H[n8n Escalation Webhook]
+    H --> I[Slack Alert to Human]
+    G -->|Pass & Calm| J[Auto-Resolved / Email]
 ```
 
-*   **1. Frontend Trigger:** A user submits a ticket via the Next.js UI, which proxies the request directly to the n8n orchestrator.
-*   **2. AI Processing:** n8n securely routes the payload to the FastAPI backend, where an AI Agent retrieves company policies, drafts a personalized response, and evaluates customer sentiment.
-*   **3. Safety Evaluation:** A secondary Gatekeeper LLM acts as an auditor, scoring the draft for hallucinations and strict policy compliance.
-*   **4. Instant UI Render:** The backend returns the evaluation to n8n, which instantly responds to the frontend webhook. The UI updates natively without freezing.
-*   **5. Background Escalation:** n8n silently continues in the background. If the AI draft failed safety checks or the customer is angry, it escalates the ticket directly to human agents via a Slack alert.
+*   **1. Frontend Stream:** A user submits a ticket via the Next.js UI, which opens a real-time SSE (Server-Sent Events) connection to the FastAPI backend.
+*   **2. AI Processing (Real-Time):** The backend retrieves company policies via RAG, drafts a personalized response, and streams tokens directly back to the UI for a zero-latency typing experience.
+*   **3. Safety Evaluation:** Immediately after the draft finishes, a secondary Gatekeeper LLM acts as an auditor, scoring the draft for hallucinations and strict policy compliance.
+*   **4. Orchestration & Escalation:** The backend dynamically checks the evaluation score and the customer sentiment. If the draft fails safety checks or the customer is angry, it triggers an asynchronous n8n webhook to escalate the ticket directly to human agents via a Slack alert.
 
 ## 3. Tech Stack
 *   **Orchestration:** [n8n](https://n8n.io/) (Handles webhook ingestion, conditional routing, and API communication)
@@ -43,16 +40,15 @@ graph TD
 
 ## 4. System Architecture
 
-1.  **Ingestion:** n8n listens for incoming emails or support tickets (e.g., Zendesk webhook).
-2.  **Processing:** n8n sends the payload to a custom LangChain backend (Python/Next.js).
-3.  **RAG & Drafting:** 
+1.  **Ingestion:** The Next.js frontend proxy intercepts support tickets and connects to the FastAPI backend.
+2.  **Streaming & Drafting:** 
     *   LangChain Agent converts the query to a vector.
     *   Searches the Vector Database for relevant company policies.
-    *   `openai/gpt-oss-20b` drafts a response and classifies user sentiment.
-4.  **Evaluation:** DeepEval immediately scores the drafted response against the retrieved context to check for Hallucinations and Answer Relevancy.
-5.  **Routing (The Switch):** The backend returns the draft and the DeepEval score to n8n.
-    *   *Path A (Pass):* If Score >= 0.85 & Sentiment is safe -> n8n emails the customer automatically.
-    *   *Path B (Fail/Escalate):* If Score < 0.85 or Sentiment is angry -> n8n posts the draft and original ticket to a Slack channel for human approval.
+    *   `openai/gpt-oss-20b` drafts a response and streams tokens directly to the client via Server-Sent Events (SSE).
+3.  **Evaluation:** DeepEval immediately scores the drafted response against the retrieved context to check for Hallucinations and Answer Relevancy.
+4.  **Routing (The Switch):** The FastAPI backend autonomously decides the next step based on the evaluation and sentiment.
+    *   *Path A (Pass):* If Score >= 0.85 & Sentiment is safe -> Resolves automatically.
+    *   *Path B (Fail/Escalate):* If Score < 0.85 or Sentiment is angry -> FastAPI triggers an n8n webhook, posting the draft and original ticket to a Slack channel for human approval.
 
 ## 5. Interactive Split-Screen Demo
 To showcase this complex backend orchestration, the project includes an interactive Next.js web application designed for recruiters and clients:
