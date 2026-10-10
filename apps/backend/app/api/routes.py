@@ -56,6 +56,9 @@ async def stream_ticket(req: TicketRequest):
     2. Runs the Gatekeeper evaluation asynchronously at the end and yields the result.
     """
     async def event_generator():
+        # Immediate feedback to frontend to mask cold-start latency
+        yield f"data: {json.dumps({'type': 'log', 'content': 'Waking up AI routing services...'})}\n\n"
+        
         internal_data = {}
         
         # 1. Stream the draft response
