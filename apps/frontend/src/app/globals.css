@@ -122,7 +122,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-zinc-50/60 text-zinc-800 selection:bg-indigo-100 selection:text-indigo-900 dark:bg-zinc-950 dark:text-zinc-300 dark:selection:bg-indigo-900 dark:selection:text-indigo-200;
+    @apply bg-zinc-50/60 text-zinc-800 selection:bg-black selection:text-white dark:bg-zinc-950 dark:text-zinc-300 dark:selection:bg-white dark:selection:text-black;
   }
   html {
     @apply font-sans;

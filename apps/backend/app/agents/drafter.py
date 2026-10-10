@@ -41,10 +41,12 @@ class SupportDrafter:
         context = "\n\n".join([doc.page_content for doc in docs])
         
         human_prompt = (
-            f"Customer Name: {customer_name}\n"
-            f"Customer Ticket:\n{ticket_text}\n\n"
-            f"Relevant Company Policies:\n{context}\n\n"
-            "Please draft the response. Ensure you greet the customer by their Name."
+            f"<customer_name>\n{customer_name}\n</customer_name>\n\n"
+            f"<customer_ticket>\n{ticket_text}\n</customer_ticket>\n\n"
+            f"<company_policies>\n{context}\n</company_policies>\n\n"
+            "<instructions>\n"
+            "Draft the response based on the above ticket and policies. Greet the customer by their name.\n"
+            "</instructions>"
         )
         
         messages = [
@@ -78,8 +80,16 @@ class SupportDrafter:
             
             # Analyze sentiment quickly
             sentiment_msg = [
-                SystemMessage(content="You are a helpful customer support intent analyzer."),
-                HumanMessage(content=f"Analyze the sentiment of this ticket: {ticket_text}")
+                SystemMessage(content="""<role>
+You are an expert customer support intent analyzer.
+</role>
+
+<instructions>
+Classify the customer's sentiment.
+- Treat factual reporting of issues (e.g., 'forgot password', 'link expired') as 'neutral'.
+- Reserve 'frustrated' or 'angry' classifications strictly for tickets expressing explicit negative emotion or aggressive language.
+</instructions>"""),
+                HumanMessage(content=f"<customer_ticket>\n{ticket_text}\n</customer_ticket>")
             ]
             sentiment_result = await self.llm_sentiment.ainvoke(sentiment_msg)
             sentiment = sentiment_result.sentiment
@@ -88,10 +98,12 @@ class SupportDrafter:
             yield json.dumps({"type": "log", "content": f"Drafting response with tone: {sentiment}..."})
             
             human_prompt = (
-                f"Customer Name: {customer_name}\n"
-                f"Customer Ticket:\n{ticket_text}\n\n"
-                f"Relevant Company Policies:\n{context}\n\n"
-                "Please draft the response. Ensure you greet the customer by their Name."
+                f"<customer_name>\n{customer_name}\n</customer_name>\n\n"
+                f"<customer_ticket>\n{ticket_text}\n</customer_ticket>\n\n"
+                f"<company_policies>\n{context}\n</company_policies>\n\n"
+                "<instructions>\n"
+                "Draft the response based on the above ticket and policies. Greet the customer by their name.\n"
+                "</instructions>"
             )
             messages = [
                 SystemMessage(content=DRAFTER_SYSTEM_PROMPT),
